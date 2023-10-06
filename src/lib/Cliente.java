@@ -16,17 +16,21 @@ import javax.swing.JOptionPane;
  * @author JuanA
  */
 public class Cliente {
+    //Variables locales
     private String SERVER_IP;
     private static final int SERVER_PORT = 2099;
-    private Vector<String> usuarios = new Vector<String>();
+    private Vector<String> usuarios = new Vector<>();
     private Socket socket;
     private DataInputStream netIn;
     private DataOutputStream netOut;
     private String username;
 
+    //Constructor
     public Cliente(String serverIP, String username) {
+        //Inicializaciión de propiedades
         this.SERVER_IP = serverIP;
         this.username = username;
+        //Concexión con el servidor
         try {
             socket = new Socket(SERVER_IP, SERVER_PORT);
             netIn = new DataInputStream(socket.getInputStream());
@@ -38,6 +42,7 @@ public class Cliente {
         }
     }
 
+    //GETS
     public Vector<String> getUsuarios() {
         return usuarios;
     }
@@ -46,9 +51,11 @@ public class Cliente {
         return username;
     }
 
+    //Métodos de clase
     public void notificarConexion() {
         try {
-            // Enviar el username al servidor
+            // Enviar notificación de conexión al servidor
+            // Example: j^username@127.0.0.1^-^-^
             String msg = "j^" + username + "@" + socket.getInetAddress().getHostAddress() + "^-^-^";
             netOut.writeUTF(msg);
         } catch (IOException e) {
@@ -60,7 +67,8 @@ public class Cliente {
 
     public void enviarMensaje(String mensaje) {
         try {
-            // Agregar el username al mensaje antes de enviarlo
+            // Enviar notificación de mensaje normal al chat general
+            // Example: m^username@127.0.0.1^-^mensaje^
             String msg = "m^" + username + "@" + socket.getInetAddress().getHostAddress() + "^-^" + mensaje + "^";
             netOut.writeUTF(msg);
         } catch (IOException e) {
@@ -75,8 +83,8 @@ public class Cliente {
             String msg = netIn.readUTF();
             System.out.println("Mensaje recibido en chat general" + msg);
 
+            // Lista de usuarios conectados
             if (msg.startsWith("l^")) {
-                // Lista de usuarios conectados
                 String users = msg.substring(2);
                 StringTokenizer st = new StringTokenizer(users, "^");
                 while (st.hasMoreTokens()) {
@@ -86,6 +94,7 @@ public class Cliente {
                     }
                 }
                 return null;
+            //Mensajes para el chat general
             } else if (msg.startsWith("m^") || msg.startsWith("p^") || msg.startsWith("j^")) {
                 StringTokenizer st = new StringTokenizer(msg, "^");
                 String type = st.nextToken();
@@ -102,18 +111,19 @@ public class Cliente {
                     // Mensaje del servidor
                     return mensaje;
                 }
+            //Posibles mensajes error
+            } else {
+                return null;
             }
-
         } catch (IOException e) {
             // Manejar la excepción aquí
             throw new IOException("Error al recibir el mensaje.", e);
         }
-        return null;
     }
 
     public void enviarMensajePrivado(String mensaje, String target) {
         try {
-            // Agregar el username al mensaje antes de enviarlo
+            // Example: d^username@127.0.0.1^148.220.117.107^mensaje^
             String msg = "d^" + username + "@" + socket.getInetAddress().getHostAddress() + "^" + target + "^" + mensaje + "^";
             System.out.println(username + " envia " + msg);
             netOut.writeUTF(msg);
@@ -129,6 +139,7 @@ public class Cliente {
             String msg = netIn.readUTF();
             System.out.println("Si se recibe mensaje en funcion privada: " + msg);
 
+            //Mensajes privados
             if (msg.startsWith("d")) {
                 System.out.println("Se recibio un mensaje privado");
                 // Mensaje privado
@@ -139,6 +150,7 @@ public class Cliente {
                 String mensaje = st.nextToken();
 
                 return nombre + ": " + mensaje;
+            //Recepción de archivos
             } else if (msg.startsWith("f")) {
                 StringTokenizer st = new StringTokenizer(msg, "^");
                 String type = st.nextToken();
@@ -162,8 +174,8 @@ public class Cliente {
                 fos.close();
 
                 // Notifica al usuario que el archivo ha sido recibido
-                // Puedes mostrar un mensaje en la interfaz gráfica del usuario o realizar otra acción según sea necesario
                 return "Has recibido el siguiente archivo: " + nombreArchivo;
+            //Posibles mensajes error
             } else {
                 System.out.println("Tecnicamente el mensaje no inicia con d:> " + msg);
                 return null;
@@ -188,8 +200,9 @@ public class Cliente {
                     netOut.write(buffer, 0, bytesRead);
                 }
                 // Cierra el flujo de salida del archivo
+                fis.close();
                 // Notifica al usuario que el archivo ha sido enviado
-                // Puedes mostrar un mensaje en la interfaz gráfica del usuario o realizar otra acción según sea necesario
+                JOptionPane.showMessageDialog(null, "El archivo ha sido enviado.", "Archivo enviado", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (IOException e) {
             // Maneja las excepciones aquí
@@ -198,8 +211,10 @@ public class Cliente {
 
     public void cerrarConexion() {
         try {
+            //Verifica si el socket existe y no está cerrado
             if (socket != null && !socket.isClosed()) {
                 // Enviar el mensaje de salida al servidor
+                // Example: p^username@127.0.0.1^-^-^
                 String msg = "p^" + username + "@" + socket.getInetAddress().getHostAddress() + "^-^-^";
                 netOut.writeUTF(msg);
                 // Cerrar el socket

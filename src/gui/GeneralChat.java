@@ -5,7 +5,6 @@
 package gui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
@@ -18,25 +17,25 @@ import lib.MensajePrivadoHandler;
  * @author JuanA
  */
 public class GeneralChat extends javax.swing.JFrame implements WindowListener {
+    //Variables locales
     private final Cliente cliente;
-    private HashMap<String, PrivateChat> privateChatWindows = new HashMap<>();
+    private final HashMap<String, PrivateChat> privateChatWindows;
 
     /**
      * Creates new form GeneralChat
+     * @param cliente
      */
     public GeneralChat(Cliente cliente) {
-        initComponents();
+        this.privateChatWindows = new HashMap<>();
         this.cliente = cliente;
+        initComponents();
         addWindowListener(this);
         setLocationRelativeTo(null);
         setTitle("Chat grupal - " + cliente.getUsername());
         
-        messageTextField.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
+        messageTextField.addActionListener((ActionEvent e) -> {
             // Acción a realizar cuando se presiona Enter en el messageTextField
             enviarMensaje();
-        }
         });
     }
 
@@ -244,16 +243,18 @@ public class GeneralChat extends javax.swing.JFrame implements WindowListener {
 
             // Verificar si ya existe una ventana de chat privado para este usuario
             if (!privateChatWindows.containsKey(username)) {
+                //Abrir ventana de mensajes privados
                 PrivateChat privateChatW = new PrivateChat(cliente, ipcliente);
                 privateChatW.setVisible(true);
                 privateChatWindows.put(username, privateChatW);
                 privateChatW.getMessageTF().requestFocus(); // getMessageTF() es un método de acceso a messageTF en la clase PrivateChat
 
+                //Manejo de recepción de mensajes en hilos
                 MensajePrivadoHandler mensajePrivadoHandler = new MensajePrivadoHandler(cliente, privateChatW);
                 Thread hiloMensajesPrivados = new Thread(mensajePrivadoHandler);
                 hiloMensajesPrivados.start();
             } else {
-                // La ventana de chat privado ya está abierta para este usuario, puedes realizar alguna acción aquí si es necesario.
+                // La ventana de chat privado ya está abierta para este usuario.
             }
         }
     }//GEN-LAST:event_usersListMouseClicked

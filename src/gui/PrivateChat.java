@@ -5,9 +5,6 @@
 package gui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 
@@ -18,6 +15,7 @@ import lib.Cliente;
  * @author JuanA
  */
 public class PrivateChat extends javax.swing.JFrame {
+    //Variables locales
     private final Cliente cliente;
     private final String ipClienteTarget;
     private final String usernameTarget;
@@ -25,6 +23,8 @@ public class PrivateChat extends javax.swing.JFrame {
 
     /**
      * Creates new form PrivateChat
+     * @param cliente
+     * @param ipClienteTarget
      */
     public PrivateChat(Cliente cliente, String ipClienteTarget) {
         
@@ -38,12 +38,9 @@ public class PrivateChat extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         
-        messageTF.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Acción a realizar cuando se presiona Enter en el messageTextField
-                enviarMensaje();
-            }
+        messageTF.addActionListener((ActionEvent e) -> {
+            // Acción a realizar cuando se presiona Enter en el messageTextField
+            enviarMensaje();
         });
     };
     
@@ -206,7 +203,9 @@ public class PrivateChat extends javax.swing.JFrame {
     }//GEN-LAST:event_enviarBtnActionPerformed
 
     private void filesSelectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filesSelectBtnActionPerformed
-        String path = "";
+        String path;
+        
+        //Seleccionar el archivo a enviar
         JFileChooser fileChooser = new JFileChooser();
         int seleccion = fileChooser.showOpenDialog(this);
         if (seleccion == JFileChooser.APPROVE_OPTION) {
@@ -214,7 +213,6 @@ public class PrivateChat extends javax.swing.JFrame {
             System.out.println("Path: " + path);
             cliente.enviarArchivo(path, ipTarget);
         }
-        
     }//GEN-LAST:event_filesSelectBtnActionPerformed
 
     public void mostrarMensaje(String mensaje) {
