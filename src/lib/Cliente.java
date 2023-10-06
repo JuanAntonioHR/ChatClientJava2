@@ -61,7 +61,7 @@ public class Cliente {
     public void enviarMensaje(String mensaje) {
         try {
             // Agregar el username al mensaje antes de enviarlo
-            String msg = "m^" + username + "@" + socket.getInetAddress().getHostAddress() + "^-^" + mensaje;
+            String msg = "m^" + username + "@" + socket.getInetAddress().getHostAddress() + "^-^" + mensaje + "^";
             netOut.writeUTF(msg);
         } catch (IOException e) {
             // Mostrar un JOptionPane con el mensaje de error y cerrar la aplicación
@@ -77,8 +77,8 @@ public class Cliente {
 
             if (msg.startsWith("l^")) {
                 // Lista de usuarios conectados
-                String usuarios = msg.substring(2);
-                StringTokenizer st = new StringTokenizer(usuarios, "^");
+                String users = msg.substring(2);
+                StringTokenizer st = new StringTokenizer(users, "^");
                 while (st.hasMoreTokens()) {
                     String usuario = st.nextToken();
                     if (!this.usuarios.contains(usuario)) {
@@ -139,6 +139,31 @@ public class Cliente {
                 String mensaje = st.nextToken();
 
                 return nombre + ": " + mensaje;
+            } else if (msg.startsWith("f")) {
+                StringTokenizer st = new StringTokenizer(msg, "^");
+                String type = st.nextToken();
+                String ipCliente = st.nextToken();
+                String target = st.nextToken();
+                String nombreArchivo = st.nextToken();
+                long tamañoArchivo = Long.parseLong(st.nextToken());
+
+                // Crea un FileOutputStream para escribir los bytes del archivo en un nuevo archivo
+                FileOutputStream fos = new FileOutputStream(nombreArchivo);
+
+                // Lee los bytes del archivo y escríbelos en el archivo
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while (tamañoArchivo > 0 && (bytesRead = netIn.read(buffer, 0, (int) Math.min(buffer.length, tamañoArchivo))) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                    tamañoArchivo -= bytesRead;
+                }
+
+                // Cierra el FileOutputStream después de recibir el archivo completo
+                fos.close();
+
+                // Notifica al usuario que el archivo ha sido recibido
+                // Puedes mostrar un mensaje en la interfaz gráfica del usuario o realizar otra acción según sea necesario
+                return "Has recibido el siguiente archivo: " + nombreArchivo;
             } else {
                 System.out.println("Tecnicamente el mensaje no inicia con d:> " + msg);
                 return null;
@@ -151,15 +176,25 @@ public class Cliente {
 
     public void enviarArchivo(String path, String target) {
         try {
-            // Agregar el username al mensaje antes de enviarlo
-            String msg = "f^" + username + "@" + socket.getInetAddress().getHostAddress() + "^" + target + "^" + path + "^";
-            netOut.writeUTF(msg);
+            // Abre el archivo
+            File archivo = new File(path);
+            // Envía metadatos del archivo al receptor (nombre del archivo y tamaño)
+            try (FileInputStream fis = new FileInputStream(archivo)) {
+                netOut.writeUTF("f^" + username + "@" + socket.getInetAddress().getHostAddress() + "^" + target + "^" + archivo.getName() + "^" + archivo.length() + "^");
+                // Envía el contenido del archivo al receptor
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    netOut.write(buffer, 0, bytesRead);
+                }
+                // Cierra el flujo de salida del archivo
+                // Notifica al usuario que el archivo ha sido enviado
+                // Puedes mostrar un mensaje en la interfaz gráfica del usuario o realizar otra acción según sea necesario
+            }
         } catch (IOException e) {
-            // Mostrar un JOptionPane con el mensaje de error y cerrar la aplicación
-            JOptionPane.showMessageDialog(null, "Error al enviar el archivo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            System.exit(1); // Cerrar la aplicación
+            // Maneja las excepciones aquí
         }
-    }
+    }    
 
     public void cerrarConexion() {
         try {
