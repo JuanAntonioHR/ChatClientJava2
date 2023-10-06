@@ -12,9 +12,11 @@ import java.io.IOException;
  * @author JuanA
  */
 public class MensajePrivadoHandler implements Runnable {
-    private Cliente cliente;
-    private PrivateChat privateChat;
+    //Variables locales
+    private final Cliente cliente;
+    private final PrivateChat privateChat;
 
+    //Constructor
     public MensajePrivadoHandler(Cliente cliente, PrivateChat privateChat) {
         this.cliente = cliente;
         this.privateChat = privateChat;
@@ -27,14 +29,12 @@ public class MensajePrivadoHandler implements Runnable {
             try {
                 String mensaje = cliente.recibirMensajePrivado(privateChat.getUsernameTarget());
                 System.out.println("Si sale después de que le llegue un mensaje privado: " + mensaje);
-                // El ipClienteTarget es el ip del cliente que envió el mensaje
+                // Mostrar el mensaje si la pantalla está activa
                 if (mensaje != null && privateChat.isVisible()) {
-
                     System.out.println("Va a ejecutar la función para mostrar mensajes");
                     privateChat.mostrarMensaje(mensaje);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
                 // Manejar la excepción si es necesario
             }
         }
