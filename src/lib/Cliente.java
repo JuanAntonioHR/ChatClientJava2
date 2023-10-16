@@ -100,8 +100,7 @@ public class Cliente {
                 String type = st.nextToken();
                 String nombreIP = st.nextToken();
                 String nombre = nombreIP.substring(0, nombreIP.indexOf("@"));
-                String ipCliente = nombreIP.substring(nombreIP.indexOf("@") + 1);
-                String target = st.nextToken();
+                st.nextToken();
                 String mensaje = st.nextToken();
 
                 if (type.equalsIgnoreCase("m")) {
@@ -142,7 +141,6 @@ public class Cliente {
             //Mensajes privados
             if (msg.startsWith("d")) {
                 System.out.println("Se recibio un mensaje privado");
-                // Mensaje privado
                 StringTokenizer st = new StringTokenizer(msg, "^");
                 String type = st.nextToken();
                 String ipCliente = st.nextToken();
